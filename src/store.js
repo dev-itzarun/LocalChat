@@ -81,7 +81,9 @@ class Store {
   setCurrentRoom(v) { return this.ctx.globalState.update('localChat.currentRoom', v); }
 
   getRooms() {
-    return this.ctx.globalState.get('localChat.rooms') || ['general'];
+    let rooms = this.ctx.globalState.get('localChat.rooms') || ['general'];
+    if (!rooms.includes('general')) rooms.unshift('general');
+    return rooms;
   }
   setRooms(v) { return this.ctx.globalState.update('localChat.rooms', v); }
 

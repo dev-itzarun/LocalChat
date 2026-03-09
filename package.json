@@ -2,7 +2,7 @@
   "name": "local-chat",
   "displayName": "Local Chat",
   "description": "Private peer-to-peer chat for developers on the same local network. No servers, no setup.",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "publisher": "triode-devs",
   "repository": { "type": "git", "url": "https://github.com/triode-devs/local-chat" },
   "engines": { "vscode": "^1.85.0" },
