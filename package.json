@@ -15,9 +15,21 @@
     "commands": [
       {
         "command": "localChat.openPanel",
-        "title": "Open Local Chat",
+        "title": "Toggle Local Chat",
         "category": "Local Chat",
         "icon": "$(comment-discussion)"
+      },
+      {
+        "command": "localChat.openFloating",
+        "title": "Open Local Chat (Floating Window)",
+        "category": "Local Chat",
+        "icon": "$(comment-discussion)"
+      },
+      {
+        "command": "localChat.closePanel",
+        "title": "Close Local Chat",
+        "category": "Local Chat",
+        "icon": "$(close)"
       },
       {
         "command": "localChat.setUsername",
@@ -32,6 +44,15 @@
         "icon": "$(settings-gear)"
       }
     ],
+    "menus": {
+      "editor/title": [
+        {
+          "command": "localChat.openPanel",
+          "group": "navigation",
+          "when": "true"
+        }
+      ]
+    },
     "viewsContainers": {
       "activitybar": [
         {
@@ -51,8 +72,9 @@
       ]
     },
     "keybindings": [
-      { "command": "localChat.openPanel", "key": "alt+q" },
-      { "command": "localChat.changeRoom", "key": "alt+r" }
+      { "command": "localChat.openPanel",    "key": "alt+q" },
+      { "command": "localChat.openFloating", "key": "alt+shift+q" },
+      { "command": "localChat.changeRoom",   "key": "alt+r" }
     ],
     "configuration": {
       "title": "Local Chat",

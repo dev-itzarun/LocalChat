@@ -541,6 +541,30 @@ $('clear-room-btn').onclick = () => {
   }
 };
 
+// Sidebar toggle
+let sidebarVisible = true;
+$('sidebar-toggle-btn').onclick = () => {
+  sidebarVisible = !sidebarVisible;
+  const sidebar = $('sidebar');
+  sidebar.style.transition = 'width .2s cubic-bezier(.4,0,.2,1), opacity .2s';
+  if (sidebarVisible) {
+    sidebar.style.width = '';
+    sidebar.style.minWidth = '';
+    sidebar.style.opacity = '1';
+    sidebar.style.overflow = '';
+  } else {
+    sidebar.style.width = '0';
+    sidebar.style.minWidth = '0';
+    sidebar.style.opacity = '0';
+    sidebar.style.overflow = 'hidden';
+  }
+};
+
+// Close panel button (works for floating panel; sidebar panel managed by VS Code)
+$('close-panel-btn').onclick = () => {
+  post('close-panel', {});
+};
+
 // Add room
 $('add-room-btn').onclick = () => {
   const row = $('add-room-row');
