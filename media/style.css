@@ -375,7 +375,7 @@ body {
   font-size: 14px; flex-shrink: 0; align-self: flex-end; margin-bottom: 2px;
 }
 
-.msg-body { max-width: 72%; min-width: 0; }
+.msg-body { max-width: 82%; min-width: 0; }
 .msg.mine .msg-body { align-items: flex-end; display: flex; flex-direction: column; }
 
 .msg-meta { display: flex; align-items: baseline; gap: 6px; margin-bottom: 3px; }
@@ -413,7 +413,7 @@ body {
 
 /* Hover action tray */
 .msg-actions {
-  position: absolute; top: -16px; right: 8px;
+  position: absolute; top: 2px; right: 8px;
   background: var(--glass-card); backdrop-filter: blur(12px);
   border: 1px solid var(--glass-border);
   border-radius: 10px; padding: 3px 5px;
