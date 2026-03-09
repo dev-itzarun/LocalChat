@@ -1,0 +1,100 @@
+{
+  "name": "local-chat",
+  "displayName": "Local Chat",
+  "description": "Private peer-to-peer chat for developers on the same local network. No servers, no setup.",
+  "version": "0.1.0",
+  "publisher": "localchat",
+  "engines": { "vscode": "^1.85.0" },
+  "categories": ["Other"],
+  "keywords": ["chat", "local", "network", "peer-to-peer", "team", "messaging"],
+  "icon": "resources/icon.png",
+  "activationEvents": ["onStartupFinished"],
+  "main": "./extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "localChat.openPanel",
+        "title": "Open Local Chat",
+        "category": "Local Chat",
+        "icon": "$(comment-discussion)"
+      },
+      {
+        "command": "localChat.setUsername",
+        "title": "Set Your Username",
+        "category": "Local Chat",
+        "icon": "$(person)"
+      },
+      {
+        "command": "localChat.changeRoom",
+        "title": "Change Room",
+        "category": "Local Chat",
+        "icon": "$(settings-gear)"
+      }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "localChatContainer",
+          "title": "Local Chat",
+          "icon": "resources/chat-icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "localChatContainer": [
+        {
+          "type": "webview",
+          "id": "localChat.chatView",
+          "name": "Local Chat"
+        }
+      ]
+    },
+    "keybindings": [
+      { "command": "localChat.openPanel", "key": "alt+q" },
+      { "command": "localChat.changeRoom", "key": "alt+r" }
+    ],
+    "configuration": {
+      "title": "Local Chat",
+      "properties": {
+        "localChat.username": {
+          "type": "string",
+          "default": "",
+          "description": "Your display name in Local Chat"
+        },
+        "localChat.port": {
+          "type": "number",
+          "default": 0,
+          "description": "TCP port (0 = auto-assign)"
+        },
+        "localChat.discoveryPort": {
+          "type": "number",
+          "default": 39843,
+          "description": "UDP port for peer discovery (must match teammates)"
+        },
+        "localChat.currentRoom": {
+          "type": "string",
+          "default": "general",
+          "description": "Current chat room"
+        },
+        "localChat.theme": {
+          "type": "string",
+          "default": "dark",
+          "enum": ["dark", "light", "auto"],
+          "description": "UI theme"
+        },
+        "localChat.soundEnabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Play sound on new message"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "dev": "echo 'No build needed - pure JS extension'",
+    "package": "vsce package --no-dependencies"
+  },
+  "devDependencies": {
+    "@vscode/vsce": "^2.22.0"
+  }
+}
