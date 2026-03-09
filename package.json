@@ -42,6 +42,12 @@
         "title": "Change Room",
         "category": "Local Chat",
         "icon": "$(settings-gear)"
+      },
+      {
+        "command": "localChat.checkForUpdates",
+        "title": "Check for Updates",
+        "category": "Local Chat",
+        "icon": "$(sync)"
       }
     ],
     "menus": {

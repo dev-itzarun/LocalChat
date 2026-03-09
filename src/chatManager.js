@@ -220,6 +220,14 @@ class ChatManager extends EventEmitter {
     this.emit('room-cleared', room);
   }
 
+  deleteMessage(messageId, room) {
+    room = room || this.currentRoom;
+    if (this.messages[room]) {
+      this.messages[room] = this.messages[room].filter(m => m.id !== messageId);
+    }
+    this.store.deleteMessage(room, messageId);
+  }
+
   stop() {
     this.running = false;
     this.discovery?.stop();

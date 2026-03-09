@@ -1,8 +1,9 @@
 // extension.js — Local Chat for VS Code & compatible environments (Antigravity, Cursor, etc.)
 const vscode = require('vscode');
-const { Store }           = require('./src/store');
-const { ChatManager }     = require('./src/chatManager');
+const { Store }            = require('./src/store');
+const { ChatManager }      = require('./src/chatManager');
 const { ChatViewProvider } = require('./src/chatViewProvider');
+const { startAutoUpdater, checkForUpdate } = require('./src/updater');
 
 /** @type {Store} */
 let store = null;
@@ -74,6 +75,11 @@ async function activate(context) {
       } else {
         mgr.switchRoom(picked.room);
       }
+    }),
+
+    // Manual update check
+    vscode.commands.registerCommand('localChat.checkForUpdates', () => {
+      checkForUpdate(context.extensionPath, false);
     })
   );
 
@@ -102,7 +108,30 @@ async function activate(context) {
     }
   });
 
-  context.subscriptions.push({ dispose: () => { mgr?.stop(); floatingPanel?.dispose(); } });
+  // ── Auto-updater (checks GitHub Releases silently) ───
+  startAutoUpdater(context.extensionPath);
+
+  // ── Memory Monitoring ───
+  const memoryInterval = setInterval(() => {
+    const used = process.memoryUsage().heapUsed / 1024 / 1024;
+    provider._post({ type: 'memory-update', memory: `${used.toFixed(1)} MB` });
+  }, 30000);
+
+  // Add memory to init state
+  const originalPost = provider._post;
+  provider._post = function(data) {
+    if (data.type === 'init') {
+      const used = process.memoryUsage().heapUsed / 1024 / 1024;
+      data.memory = `${used.toFixed(1)} MB`;
+    }
+    return originalPost.call(this, data);
+  };
+
+  context.subscriptions.push({ dispose: () => { 
+    mgr?.stop(); 
+    floatingPanel?.dispose(); 
+    clearInterval(memoryInterval);
+  } });
 }
 
 // ── Helpers ────────────────────────────────────────────

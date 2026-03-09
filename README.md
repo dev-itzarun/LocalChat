@@ -53,6 +53,7 @@ Developer A (VS Code)         Developer B (VS Code)
 | 🎨 **Themes**          | Light + Dark mode, 10 accent color options                         |
 | 💾 **Persistent**      | Message history and settings saved locally across sessions         |
 | 🔔 **Notifications**   | Sound alerts and VS Code status bar peer count                     |
+| 🔄 **Auto-Updates**    | Automatically checks GitHub for new versions — zero manual work    |
 | ⚡ **Zero Config**     | Works out of the box on the same subnet                            |
 
 ---

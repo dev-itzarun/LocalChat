@@ -102,9 +102,21 @@ class ChatViewProvider {
           this._post({ type: 'history-cleared' });
           break;
 
+        case 'delete-message':
+          mgr.deleteMessage(msg.messageId, msg.room);
+          break;
+
+        case 'show-info':
+          vscode.window.showInformationMessage(msg.text);
+          break;
+
         case 'close-panel':
           // Works for floating panel — activity bar panel stays managed by VS Code
           vscode.commands.executeCommand('localChat.closePanel');
+          break;
+
+        case 'checkForUpdates':
+          vscode.commands.executeCommand('localChat.checkForUpdates');
           break;
       }
     });
@@ -153,6 +165,7 @@ class ChatViewProvider {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="Content-Security-Policy" content="
     default-src 'none';
+    img-src * data:;
     font-src https://fonts.cdnfonts.com;
     style-src ${wv.cspSource} 'unsafe-inline' https://fonts.cdnfonts.com;
     script-src 'nonce-${nonce}';
@@ -276,6 +289,9 @@ class ChatViewProvider {
       <span class="setup-label">Status</span>
       <div style="display:flex;gap:6px" id="profile-status-row"></div>
 
+      <span class="setup-label">Custom Avatar URL</span>
+      <input class="setup-input" id="profile-avatar-url" type="text" placeholder="https://… (optional)" autocomplete="off" spellcheck="false"/>
+
       <button class="btn-primary" id="profile-save-btn">Save Changes</button>
     </div>
   </div>
@@ -305,6 +321,7 @@ function icon(name) {
     sun:      `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>`,
     moon:     `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>`,
     sidebar:  `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/></svg>`,
+    copy:     `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>`,
     check2:   `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 7 17l-5-5"/><path d="m22 10-7.5 7.5L13 16"/></svg>`,
   };
   return icons[name] || '';

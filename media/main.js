@@ -25,6 +25,7 @@ const state = {
   unread:      {},   // room → count
   reactions:   {},   // messageId → { emoji: count }
   readReceipts:{},   // messageId → [fromId]
+  memory:      '0 MB',
   initialized: false,
 };
 
@@ -109,6 +110,14 @@ function buildAvatarGrid(gridEl, currentAvatar, onSelect) {
   });
 }
 
+function renderAvatar(av) {
+  if (!av) return '🧑';
+  if (av.startsWith('http')) {
+    return `<img src="${av}" style="width:100%;height:100%;border-radius:50%;object-fit:cover" onerror="this.outerHTML='🧑'"/>`;
+  }
+  return escHtml(av);
+}
+
 function buildAccentSwatches() {
   const el = $('accent-swatches');
   el.innerHTML = '';
@@ -183,6 +192,7 @@ function openProfilePopup() {
   buildAccentSwatches();
   buildStatusRow($('profile-status-row'), v => { state.status = v; });
   $('profile-username').value = state.username;
+  $('profile-avatar-url').value = state.avatar.startsWith('http') ? state.avatar : '';
 
   // Sync theme buttons inside profile popup
   document.querySelectorAll('#profile-theme-row .theme-btn').forEach(b => {
@@ -243,7 +253,7 @@ function renderPeers() {
     const inCurRoom = peer.rooms?.includes(state.currentRoom);
     div.innerHTML = `
       <div class="peer-avatar">
-        ${escHtml(peer.avatar || '🧑')}
+        ${renderAvatar(peer.avatar)}
         <span class="peer-sdot ${peer.status || 'online'}"></span>
       </div>
       <div class="peer-info">
@@ -329,7 +339,7 @@ function appendMessage(msg, prepend = false) {
     : `<div class="msg-bubble">${escHtml(msg.text).replace(/\n/g,'<br>')}</div>`;
 
   row.innerHTML = `
-    <div class="msg-avatar">${escHtml(msg.avatar || '🧑')}</div>
+    <div class="msg-avatar">${renderAvatar(msg.avatar)}</div>
     <div class="msg-body">
       <div class="msg-meta">
         <span class="msg-author">${escHtml(msg.from)}</span>
@@ -340,8 +350,9 @@ function appendMessage(msg, prepend = false) {
       ${mine ? `<div class="msg-read" id="read-${msg.id}">Sent</div>` : ''}
     </div>
     <div class="msg-actions">
+      <button class="action-btn" title="Copy" onclick="copyMsg('${msg.id}')">${icon('copy')}</button>
       <button class="action-btn" title="React" onclick="triggerReactionPicker(event,'${msg.id}')">😊</button>
-      ${mine ? `<button class="action-btn" title="Delete" onclick="deleteMsg('${msg.id}')">🗑</button>` : ''}
+      ${mine ? `<button class="action-btn" title="Delete" onclick="deleteMsg('${msg.id}')">${icon('trash')}</button>` : ''}
     </div>
   `;
 
@@ -387,8 +398,20 @@ window.triggerReactionPicker = (e, msgId) => {
   buildReactionPicker(msgId, e.clientX, e.clientY);
 };
 window.deleteMsg = (msgId) => {
-  document.querySelector(`[data-id="${msgId}"]`)?.remove();
-  renderEmptyState();
+  if (confirm('Delete this message?')) {
+    post('delete-message', { messageId: msgId, room: state.currentRoom });
+    document.querySelector(`[data-id="${msgId}"]`)?.remove();
+    renderEmptyState();
+  }
+};
+window.copyMsg = (msgId) => {
+  const row = document.querySelector(`[data-id="${msgId}"]`);
+  const bubble = row?.querySelector('.msg-bubble');
+  if (bubble) {
+    const text = bubble.innerText;
+    navigator.clipboard.writeText(text);
+    vscode.postMessage({ command: 'show-info', text: 'Copied to clipboard!' });
+  }
 };
 window.post = post;
 window.state = state;
@@ -489,10 +512,12 @@ $('settings-btn').onclick = e => {
     <div class="popup-title">Settings</div>
     <div class="popup-item" id="sp-profile">✏️ Edit Profile</div>
     <div class="popup-item" id="sp-sound">🔊 Sound: ${state.soundEnabled?'On':'Off'}</div>
+    <div class="popup-item" id="sp-update">🔄 Check for Updates</div>
     <hr>
     <div class="popup-item danger" id="sp-clear">🗑 Clear All History</div>
   `;
   $('sp-profile').onclick = () => { hideAll(); openProfilePopup(); };
+  $('sp-update').onclick = () => { hideAll(); post('checkForUpdates', {}); };
   $('sp-sound').onclick = () => {
     state.soundEnabled = !state.soundEnabled;
     post('set-sound', { enabled: state.soundEnabled });
@@ -520,10 +545,13 @@ $('profile-save-btn').onclick = () => {
     state.username = name;
     myName.textContent = name;
   }
+  const customAvi = $('profile-avatar-url').value.trim();
+  if (customAvi) state.avatar = customAvi;
+
   post('set-avatar',  { avatar: state.avatar });
   post('set-status',  { status: state.status });
   profilePopup.classList.add('hidden');
-  myAvatar.textContent = state.avatar;
+  myAvatar.innerHTML = renderAvatar(state.avatar);
   updateStatusUI();
 };
 
@@ -542,9 +570,13 @@ $('clear-room-btn').onclick = () => {
 };
 
 // Sidebar toggle
-let sidebarVisible = true;
+let sidebarVisible = false; // Default closed
 $('sidebar-toggle-btn').onclick = () => {
   sidebarVisible = !sidebarVisible;
+  applySidebarState();
+};
+
+function applySidebarState() {
   const sidebar = $('sidebar');
   sidebar.style.transition = 'width .2s cubic-bezier(.4,0,.2,1), opacity .2s';
   if (sidebarVisible) {
@@ -558,7 +590,9 @@ $('sidebar-toggle-btn').onclick = () => {
     sidebar.style.opacity = '0';
     sidebar.style.overflow = 'hidden';
   }
-};
+}
+// Initial state
+applySidebarState();
 
 // Close panel button (works for floating panel; sidebar panel managed by VS Code)
 $('close-panel-btn').onclick = () => {
@@ -633,7 +667,10 @@ window.addEventListener('message', ({ data: msg }) => {
       state.peers       = msg.peers || [];
       state.status      = msg.status || 'online';
       state.fingerprint = msg.fingerprint;
+      state.memory      = msg.memory || '0 MB';
       state.initialized = true;
+
+      $('mem-usage').textContent = state.memory;
 
       applyTheme(state.theme);
       applyAccent(state.accentColor);
@@ -654,7 +691,7 @@ window.addEventListener('message', ({ data: msg }) => {
       }
 
       myName.textContent   = state.username;
-      myAvatar.textContent = state.avatar;
+      myAvatar.innerHTML = renderAvatar(state.avatar);
       updateStatusUI();
       renderRooms();
       renderPeers();
@@ -762,7 +799,7 @@ window.addEventListener('message', ({ data: msg }) => {
 
     case 'avatar-changed': {
       state.avatar = msg.avatar;
-      myAvatar.textContent = msg.avatar;
+      myAvatar.innerHTML = renderAvatar(msg.avatar);
       break;
     }
 
@@ -788,6 +825,12 @@ window.addEventListener('message', ({ data: msg }) => {
       banner.innerHTML = `📩 <strong>${escHtml(msg.from)}</strong> invited you to <strong>#${escHtml(msg.room)}</strong> — <a href="#" onclick="post('join-room',{room:'${msg.room}'});this.parentElement.remove();return false;">Join</a>`;
       messagesEl.appendChild(banner);
       scrollToBottom(true);
+      break;
+    }
+
+    case 'memory-update': {
+      state.memory = msg.memory;
+      $('mem-usage').textContent = msg.memory;
       break;
     }
   }

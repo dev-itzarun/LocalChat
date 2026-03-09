@@ -124,6 +124,14 @@ class Store {
     this._saveHistory(hist);
   }
 
+  deleteMessage(room, messageId) {
+    const hist = this._loadHistory();
+    if (hist[room]) {
+      hist[room] = hist[room].filter(m => m.id !== messageId);
+      this._saveHistory(hist);
+    }
+  }
+
   clearAllHistory() {
     try { fs.writeFileSync(this.histFile, '{}', 'utf8'); } catch (_) {}
   }
