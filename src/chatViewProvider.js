@@ -148,13 +148,13 @@ class ChatViewProvider {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="Content-Security-Policy" content="
     default-src 'none';
-    font-src https://fonts.gstatic.com;
-    style-src ${wv.cspSource} 'unsafe-inline' https://fonts.googleapis.com;
+    font-src https://fonts.cdnfonts.com;
+    style-src ${wv.cspSource} 'unsafe-inline' https://fonts.cdnfonts.com;
     script-src 'nonce-${nonce}';
   ">
   <title>Local Chat</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.cdnfonts.com">
+  <link href="https://fonts.cdnfonts.com/css/anokha" rel="stylesheet">
   <link rel="stylesheet" href="${style}">
 </head>
 <body>

@@ -3,7 +3,8 @@
   "displayName": "Local Chat",
   "description": "Private peer-to-peer chat for developers on the same local network. No servers, no setup.",
   "version": "0.1.0",
-  "publisher": "localchat",
+  "publisher": "triode-devs",
+  "repository": { "type": "git", "url": "https://github.com/triode-devs/local-chat" },
   "engines": { "vscode": "^1.85.0" },
   "categories": ["Other"],
   "keywords": ["chat", "local", "network", "peer-to-peer", "team", "messaging"],
@@ -61,15 +62,10 @@
           "default": "",
           "description": "Your display name in Local Chat"
         },
-        "localChat.port": {
-          "type": "number",
-          "default": 0,
-          "description": "TCP port (0 = auto-assign)"
-        },
         "localChat.discoveryPort": {
           "type": "number",
-          "default": 39843,
-          "description": "UDP port for peer discovery (must match teammates)"
+          "default": 53317,
+          "description": "UDP multicast port for peer discovery — all teammates must use the same port"
         },
         "localChat.currentRoom": {
           "type": "string",

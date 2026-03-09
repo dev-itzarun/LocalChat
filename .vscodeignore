@@ -4,3 +4,7 @@ node_modules/**
 tsconfig.json
 *.vsix
 .gitignore
+.gitattributes
+install.ps1
+install.sh
+CONTRIBUTING.md

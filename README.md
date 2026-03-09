@@ -59,11 +59,35 @@ Developer A (VS Code)         Developer B (VS Code)
 
 ## 📦 Installation
 
-### Option 1 — Install from VSIX (Recommended)
+### ⚡ One-liner from Git (Recommended for teammates)
+
+> Requires [Node.js](https://nodejs.org) and VS Code with the `code` CLI in PATH.
+
+**Windows (PowerShell):**
+
+```powershell
+git clone https://github.com/triode-devs/local-chat.git
+cd local-chat
+.\install.ps1
+```
+
+**macOS / Linux:**
+
+```bash
+git clone https://github.com/triode-devs/local-chat.git
+cd local-chat
+bash install.sh
+```
+
+The script automatically checks prerequisites → packages the `.vsix` → installs it into VS Code.
+
+---
+
+### Option A — Install from VSIX (no git needed)
 
 1. Download the latest `.vsix` from [Releases](https://github.com/triode-devs/local-chat/releases)
-2. In VS Code, press `Ctrl+Shift+P` → **Extensions: Install from VSIX…**
-3. Select the downloaded file and reload
+2. Press `Ctrl+Shift+P` → **Extensions: Install from VSIX…**
+3. Select the file and reload VS Code
 
 Or via terminal:
 
@@ -71,31 +95,24 @@ Or via terminal:
 code --install-extension local-chat-0.1.0.vsix
 ```
 
-### Option 2 — Build from Source
+### Option B — Manual build
 
 ```bash
-# Clone the repo
 git clone https://github.com/triode-devs/local-chat.git
 cd local-chat
-
-# Install dev dependencies
 npm install
-
-# Package the extension
 npx vsce package --no-dependencies --allow-missing-repository
-
-# Install it
 code --install-extension local-chat-0.1.0.vsix
 ```
 
-### Option 3 — Development Mode (F5)
+### Option C — Development Mode (F5)
 
 ```bash
 git clone https://github.com/triode-devs/local-chat.git
 cd local-chat
 ```
 
-Open in VS Code and press **F5** — an Extension Development Host window launches with Local Chat active.
+Open the folder in VS Code and press **F5** — an Extension Development Host launches with Local Chat active.
 
 ---
 
