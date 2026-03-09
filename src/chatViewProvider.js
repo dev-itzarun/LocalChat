@@ -110,6 +110,10 @@ class ChatViewProvider {
           vscode.window.showInformationMessage(msg.text);
           break;
 
+        case 'setup-complete':
+          store.setSetupComplete(true);
+          break;
+
         case 'close-panel':
           // Works for floating panel — activity bar panel stays managed by VS Code
           vscode.commands.executeCommand('localChat.closePanel');

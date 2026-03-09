@@ -42,6 +42,11 @@ class Store {
     return fp;
   }
 
+  isSetupComplete() {
+    return !!this.ctx.globalState.get('localChat.setupComplete');
+  }
+  setSetupComplete(v) { return this.ctx.globalState.update('localChat.setupComplete', v); }
+
   getUsername() {
     return this.ctx.globalState.get('localChat.username') ||
            os.userInfo().username || 'Developer';
@@ -148,6 +153,7 @@ class Store {
       currentRoom:  this.getCurrentRoom(),
       rooms:        this.getRooms(),
       status:       this.getStatus(),
+      setupComplete:this.isSetupComplete(),
     };
   }
 }

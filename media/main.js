@@ -486,6 +486,7 @@ $('setup-start-btn').onclick = () => {
   post('set-username', { username: name });
   post('set-avatar',   { avatar: state.avatar });
   post('set-theme',    { theme: state.theme });
+  post('setup-complete', {});
   setupScreen.classList.add('hidden');
   chatScreen.classList.remove('hidden');
   state.username = name;
@@ -678,7 +679,7 @@ window.addEventListener('message', ({ data: msg }) => {
       // Build setup avatar grid
       buildAvatarGrid($('setup-avatar-grid'), state.avatar, av => { state.avatar = av; });
 
-      if (state.username && state.username !== 'Developer') {
+      if (msg.setupComplete) {
         // Already configured — go straight to chat
         setupScreen.classList.add('hidden');
         chatScreen.classList.remove('hidden');
@@ -687,7 +688,6 @@ window.addEventListener('message', ({ data: msg }) => {
         setupScreen.classList.remove('hidden');
         chatScreen.classList.add('hidden');
         setTimeout(() => setupUsername.focus(), 100);
-        // Still seed state for when they enter chat
       }
 
       myName.textContent   = state.username;
