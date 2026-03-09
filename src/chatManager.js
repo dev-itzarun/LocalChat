@@ -6,7 +6,7 @@ const { ChatServer, sendToPeer } = require('./chatServer');
 const crypto = require('crypto');
 function uid() { return crypto.randomUUID(); }
 
-const MAX_HISTORY = 500;
+const MAX_HISTORY = 5000;
 
 class ChatManager extends EventEmitter {
   /**
@@ -82,7 +82,8 @@ class ChatManager extends EventEmitter {
   // ── Incoming ──────────────────────────────────────────
   _handleIncoming(msg, fromIP) {
     switch (msg.type) {
-      case 'message': {
+      case 'message':
+      case 'file': {
         const room = msg.room || 'general';
         if (!this.messages[room]) this.messages[room] = [];
         if (this.messages[room].some(m => m.id === msg.id)) break;
@@ -168,6 +169,30 @@ class ChatManager extends EventEmitter {
     this.emit('reaction', payload);
     const peers = this.discovery?.getPeersInRoom(room) || [];
     await Promise.allSettled(peers.map(p => sendToPeer(p.ip, p.httpPort, payload)));
+  }
+
+  async sendFile(file, room) {
+    room = room || this.currentRoom;
+    const msg = {
+      type: 'file', id: uid(),
+      from: this.username, fromId: this.fingerprint,
+      avatar: this.avatar, room,
+      fileName: file.name,
+      fileType: file.type,
+      fileSize: file.size,
+      fileData: file.data, // Base64
+      timestamp: Date.now(), readBy: [],
+    };
+    if (!this.messages[room]) this.messages[room] = [];
+    this.messages[room].push(msg);
+    if (this.messages[room].length > MAX_HISTORY) {
+      this.messages[room] = this.messages[room].slice(-MAX_HISTORY);
+    }
+    this.store.appendMessage(room, msg);
+    this.emit('message', msg);
+
+    const peers = this.discovery?.getPeersInRoom(room) || [];
+    await Promise.allSettled(peers.map(p => sendToPeer(p.ip, p.httpPort, msg)));
   }
 
   async invitePeer(peerId, room) {

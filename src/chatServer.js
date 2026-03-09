@@ -24,7 +24,7 @@ class ChatServer extends EventEmitter {
         }
 
         if (req.method === 'POST' && req.url === '/message') {
-          const MAX_BODY = 64 * 1024; // 64 KB
+          const MAX_BODY = 50 * 1024 * 1024; // 50 MB for files
           let body = '';
           let size = 0;
           req.on('data', chunk => {
