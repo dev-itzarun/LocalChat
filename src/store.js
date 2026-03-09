@@ -23,6 +23,8 @@ class Store {
     this.ctx      = context;
     this.dataDir  = context.globalStorageUri.fsPath;
     this.histFile = path.join(this.dataDir, 'history.json');
+    this._histCache = null;
+    this._savePending = false;
     this._ensureDir();
   }
 
@@ -48,8 +50,7 @@ class Store {
   setSetupComplete(v) { return this.ctx.globalState.update('localChat.setupComplete', v); }
 
   getUsername() {
-    return this.ctx.globalState.get('localChat.username') ||
-           os.userInfo().username || 'Developer';
+    return this.ctx.globalState.get('localChat.username') || 'Developer';
   }
   setUsername(v) { return this.ctx.globalState.update('localChat.username', v); }
 
@@ -59,7 +60,7 @@ class Store {
   setAvatar(v) { return this.ctx.globalState.update('localChat.avatar', v); }
 
   getTheme() {
-    return this.ctx.globalState.get('localChat.theme') || 'dark';
+    return this.ctx.globalState.get('localChat.theme') || 'light';
   }
   setTheme(v) { return this.ctx.globalState.update('localChat.theme', v); }
 
@@ -95,18 +96,26 @@ class Store {
 
   // ── Message History (persisted to JSON file) ──────────
   _loadHistory() {
+    if (this._histCache) return this._histCache;
     try {
       if (fs.existsSync(this.histFile)) {
-        return JSON.parse(fs.readFileSync(this.histFile, 'utf8'));
+        this._histCache = JSON.parse(fs.readFileSync(this.histFile, 'utf8'));
       }
     } catch (_) {}
-    return {};
+    if (!this._histCache) this._histCache = {};
+    return this._histCache;
   }
 
   _saveHistory(hist) {
-    try {
-      fs.writeFileSync(this.histFile, JSON.stringify(hist), 'utf8');
-    } catch (_) {}
+    this._histCache = hist;
+    if (this._savePending) return;
+    this._savePending = true;
+    setImmediate(() => {
+      this._savePending = false;
+      try {
+        fs.writeFileSync(this.histFile, JSON.stringify(this._histCache), 'utf8');
+      } catch (_) {}
+    });
   }
 
   getMessages(room) {

@@ -24,13 +24,14 @@ function isNewer(latest, current) {
 }
 
 // ── HTTP(S) GET helper ────────────────────────────────
-function get(url, opts = {}) {
+function get(url, opts = {}, _redirects = 0) {
   return new Promise((resolve, reject) => {
+    if (_redirects > 5) return reject(new Error('Too many redirects'));
     const mod = url.startsWith('https') ? https : http;
     const req = mod.get(url, { ...opts, headers: { 'User-Agent': 'local-chat-updater', ...(opts.headers||{}) } }, res => {
       // Follow redirects
       if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
-        return get(res.headers.location, opts).then(resolve).catch(reject);
+        return get(res.headers.location, opts, _redirects + 1).then(resolve).catch(reject);
       }
       let data = '';
       res.on('data', c => data += c);
@@ -42,12 +43,13 @@ function get(url, opts = {}) {
 }
 
 // ── Download file to disk ─────────────────────────────
-function download(url, dest) {
+function download(url, dest, _redirects = 0) {
   return new Promise((resolve, reject) => {
+    if (_redirects > 5) return reject(new Error('Too many redirects'));
     const mod = url.startsWith('https') ? https : http;
     const req = mod.get(url, { headers: { 'User-Agent': 'local-chat-updater' } }, res => {
       if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
-        return download(res.headers.location, dest).then(resolve).catch(reject);
+        return download(res.headers.location, dest, _redirects + 1).then(resolve).catch(reject);
       }
       if (res.statusCode !== 200) return reject(new Error(`HTTP ${res.statusCode}`));
       const file = fs.createWriteStream(dest);

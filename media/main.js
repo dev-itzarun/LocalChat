@@ -10,6 +10,12 @@ function post(command, data) { vscode.postMessage({ command, ...data }); }
 /* ═══════════════════════════════════════════════════
    State
 ═══════════════════════════════════════════════════ */
+const INIT = window.__INIT__ || {};
+if (INIT.setupComplete) {
+  document.getElementById('setup-screen').classList.add('hidden');
+  document.getElementById('chat-screen').classList.remove('hidden');
+}
+
 const state = {
   username:    '',
   avatar:      '🧑',
@@ -491,7 +497,7 @@ $('setup-start-btn').onclick = () => {
   chatScreen.classList.remove('hidden');
   state.username = name;
   myName.textContent = name;
-  myAvatar.textContent = state.avatar;
+  myAvatar.innerHTML = renderAvatar(state.avatar);
   inputEl.focus();
 };
 
@@ -679,12 +685,12 @@ window.addEventListener('message', ({ data: msg }) => {
       // Build setup avatar grid
       buildAvatarGrid($('setup-avatar-grid'), state.avatar, av => { state.avatar = av; });
 
-      if (msg.setupComplete) {
+      if (msg.setupComplete || INIT.setupComplete) {
         // Already configured — go straight to chat
         setupScreen.classList.add('hidden');
         chatScreen.classList.remove('hidden');
       } else {
-        setupUsername.value = state.username !== 'Developer' ? state.username : '';
+        setupUsername.value = (state.username && state.username !== 'Developer') ? state.username : '';
         setupScreen.classList.remove('hidden');
         chatScreen.classList.add('hidden');
         setTimeout(() => setupUsername.focus(), 100);
@@ -839,6 +845,6 @@ window.addEventListener('message', ({ data: msg }) => {
 /* ═══════════════════════════════════════════════════
    Bootstrap
 ═══════════════════════════════════════════════════ */
-// Apply saved theme (default dark) before init message arrives
-document.documentElement.setAttribute('data-theme', 'dark');
+// Apply saved theme (default light) before init message arrives
+document.documentElement.setAttribute('data-theme', 'light');
 post('ready', {});

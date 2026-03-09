@@ -306,6 +306,9 @@ class ChatViewProvider {
   <div id="reaction-picker" class="reaction-picker hidden"></div>
 </div>
 
+<script nonce="${nonce}">
+  window.__INIT__ = ${JSON.stringify(this.store.getFullState())};
+</script>
 <script nonce="${nonce}" src="${script}"></script>
 </body>
 </html>`;

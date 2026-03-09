@@ -53,17 +53,25 @@ class PeerDiscovery extends EventEmitter {
         // Ignore self
         if (data.fingerprint === this.device.fingerprint) return;
 
-        const fp  = data.fingerprint;
+        const fp = data.fingerprint;
+        if (typeof fp !== 'string' || fp.length > 64) return;
+
+        // Cap capacity
+        if (this.peers.size >= 200 && !this.peers.has(fp)) return;
+
+        const httpPort = Number(data.httpPort);
+        if (!Number.isInteger(httpPort) || httpPort < 1024 || httpPort > 65535) return;
+
         const isNew = !this.peers.has(fp);
         const peer  = {
           id:        fp,
           ip:        rinfo.address,
-          httpPort:  data.httpPort,
-          username:  data.alias || data.username || 'Unknown',
-          alias:     data.alias || data.username,
-          rooms:     data.rooms || ['general'],
-          status:    data.status || 'online',
-          avatar:    data.avatar || '🧑',
+          httpPort:  httpPort,
+          username:  String(data.alias || data.username || 'Unknown').slice(0, 32),
+          alias:     String(data.alias || data.username || 'Unknown').slice(0, 32),
+          rooms:     Array.isArray(data.rooms) ? data.rooms.slice(0, 20).map(r => String(r).slice(0, 32)) : ['general'],
+          status:    String(data.status || 'online').slice(0, 16),
+          avatar:    String(data.avatar || '🧑').slice(0, 400),
           lastSeen:  Date.now(),
         };
 

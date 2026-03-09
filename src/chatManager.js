@@ -3,7 +3,8 @@ const { EventEmitter } = require('events');
 const { PeerDiscovery } = require('./peerDiscovery');
 const { ChatServer, sendToPeer } = require('./chatServer');
 
-function uid() { return Math.random().toString(36).slice(2, 10) + Date.now().toString(36); }
+const crypto = require('crypto');
+function uid() { return crypto.randomUUID(); }
 
 const MAX_HISTORY = 500;
 
@@ -84,8 +85,11 @@ class ChatManager extends EventEmitter {
       case 'message': {
         const room = msg.room || 'general';
         if (!this.messages[room]) this.messages[room] = [];
+        if (this.messages[room].some(m => m.id === msg.id)) break;
         this.messages[room].push(msg);
-        if (this.messages[room].length > MAX_HISTORY) this.messages[room].shift();
+        if (this.messages[room].length > MAX_HISTORY) {
+          this.messages[room] = this.messages[room].slice(-MAX_HISTORY);
+        }
         this.store.appendMessage(room, msg);
         this.emit('message', msg);
         // Auto-send read receipt if we're in the same room
@@ -109,7 +113,10 @@ class ChatManager extends EventEmitter {
         break;
       }
       case 'room-invite': {
-        this.emit('room-invite', msg);
+        const rawRoom = String(msg.room || '').trim().toLowerCase()
+          .replace(/[^a-z0-9-]/g, '-').slice(0, 32);
+        if (!rawRoom) break;
+        this.emit('room-invite', { ...msg, room: rawRoom });
         break;
       }
     }
@@ -138,7 +145,9 @@ class ChatManager extends EventEmitter {
     };
     if (!this.messages[room]) this.messages[room] = [];
     this.messages[room].push(msg);
-    if (this.messages[room].length > MAX_HISTORY) this.messages[room].shift();
+    if (this.messages[room].length > MAX_HISTORY) {
+      this.messages[room] = this.messages[room].slice(-MAX_HISTORY);
+    }
     this.store.appendMessage(room, msg);
     this.emit('message', msg);
 

@@ -24,9 +24,21 @@ class ChatServer extends EventEmitter {
         }
 
         if (req.method === 'POST' && req.url === '/message') {
+          const MAX_BODY = 64 * 1024; // 64 KB
           let body = '';
-          req.on('data', chunk => { body += chunk; });
+          let size = 0;
+          req.on('data', chunk => {
+            size += chunk.length;
+            if (size > MAX_BODY) {
+              res.writeHead(413);
+              res.end('Payload too large');
+              req.destroy();
+              return;
+            }
+            body += chunk;
+          });
           req.on('end', () => {
+            if (res.writableEnded) return;
             try {
               const msg = JSON.parse(body);
               this.emit('message', msg, req.socket.remoteAddress);
